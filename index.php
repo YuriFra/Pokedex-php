@@ -11,57 +11,14 @@ if (!empty($_GET['pokeId'])) {
 }
 $pokeName = $pokeArr['name'];
 $pokeId = $pokeArr['id'];
-//var_dump(json_decode($pokeInfo, true));
-echo '<div id="first"><div id="id">ID: ' . $pokeId . '</div>
-           <div id="name">' . ucfirst($pokeName) . '</div>
-           <div id="sprite"><img src="' . $pokeArr['sprites']['front_default'] . '">
-           <img src="' . $pokeArr['sprites']['back_default'] . '"></div></div>';
-$movesArr = array_slice($pokeArr['moves'], 0, 4);
-foreach ($movesArr as $value) {
-    echo '<div id="moves">' . $value['move']['name'] . '</div>';
-}
-
-?>
-<?php
-// get childname from pokemon species api
-$pokeChild = file_get_contents('https://pokeapi.co/api/v2/pokemon-species/' . $_GET['pokeId']);
+// get previous evolution
+$pokeChild = file_get_contents('https://pokeapi.co/api/v2/pokemon-species/' . $pokeName);
 $childArr = json_decode($pokeChild, true);
-//var_dump($childArr);
-if (!empty($childArr['evolves_from_species']['name'])) {
-    echo '<div>Child: ' . ucfirst($childArr['evolves_from_species']['name']) . '</div>';
-} else {
-    echo '<div>' . ucfirst($childArr['name']) . ' is the baby</div>';
-}
-
-// get parent chain from url
-$chainUrl = explode('/', $childArr['evolution_chain']['url']);
-$chainId = $chainUrl[6];
-
-// get poke evolutions from api
-$pokeParent = file_get_contents('https://pokeapi.co/api/v2/evolution-chain/' . $chainId);
+// get next evolutions
+$pokeParent = file_get_contents($childArr['evolution_chain']['url']);
 $parentArr = json_decode($pokeParent, true);
-//var_dump($parentArr['chain']['evolves_to']);
-if ($parentArr['chain']['evolves_to'] === []) {
-    echo '<p>No evolution</p>';
-} elseif (count($parentArr['chain']['evolves_to']) > 1) {
-    $list = [];
-    foreach ($parentArr['chain']['evolves_to'] as $value) {
-        array_push($list, $value['species']['name']);
-    }
-    //display next evolution in array
-    if (in_array($pokeName, $list)) {
-        echo '<p>Parent: ' . ucfirst(next($list)) . '</p>';
-    } else {
-        //display first evolution in array
-        echo '<p>Parent: ' . ucfirst(reset($list)) . '</p>';
-    }
-} elseif ($parentArr['chain']['evolves_to'][0]['evolves_to'][0]['species']['name'] === $pokeName) {
-    echo '<p>No further evolution</p>';
-} elseif ($parentArr['chain']['evolves_to'][0]['species']['name'] === $pokeName) {
-    echo '<p>Parent: ' . ucfirst($parentArr['chain']['evolves_to'][0]['evolves_to'][0]['species']['name']) . '</p>';
-} else {
-    echo '<p>Parent: ' . ucfirst($parentArr['chain']['evolves_to'][0]['species']['name']) . '</p>';
-}
+// get current one
+$firstPoke = json_decode(file_get_contents('https://pokeapi.co/api/v2/pokemon/' . $parentArr['chain']['species']['name']), true);
 ?>
 
 <!doctype html>
@@ -94,7 +51,7 @@ if ($parentArr['chain']['evolves_to'] === []) {
             <div id="info">
                 <?php echo '<div id="first"><div id="id">ID: ' . $pokeId . '</div>
            <div id="name">' . ucfirst($pokeName) . '</div>
-           <div id="sprite"><img src="' . $pokeArr['sprites']['front_default'] . '">
+           <div id="sprite"><img src="' . $pokeArr['sprites']['front_default'] . '" alt="sprite">
            <img src="' . $pokeArr['sprites']['back_default'] . '"></div></div>'; ?>
                 <div id="second">
                     <?php $movesArr = array_slice($pokeArr['moves'],  0,4);
@@ -104,32 +61,20 @@ if ($parentArr['chain']['evolves_to'] === []) {
                 </div>
                 <div id="evolution">
                     <?php
-                    if (!empty($childArr['evolves_from_species']['name'])) {
-                        echo '<div>Child: ' . ucfirst($childArr['evolves_from_species']['name']) . '</div>';
-                    } else {
-                        echo '<div>' . ucfirst($childArr['name']) . ' is the baby</div>';
-                    }
-
                     if ($parentArr['chain']['evolves_to'] === []) {
-                        echo '<p>No further evolution</p>';
-                    } elseif (count($parentArr['chain']['evolves_to']) > 1) {
-                        $list = [];
+                        echo '<p>No evolution</p>';
+                    } elseif (count($parentArr['chain']['evolves_to']) >= 1) {
+                        echo '<div id="evo"><img id="sprites" src="' . $firstPoke['sprites']['front_default'] . '" alt="sprite"><div>' . ucfirst($parentArr['chain']['species']['name']) . '</div></div>';
                         foreach ($parentArr['chain']['evolves_to'] as $value) {
-                            array_push($list, $value['species']['name']);
+                            $pokeList = json_decode(file_get_contents('https://pokeapi.co/api/v2/pokemon/' . $value['species']['name']), true);
+                            echo '<div id="evo"><img id="sprites" src="' . $pokeList['sprites']['front_default'] . '" alt="sprite"><div>' . ucfirst($value['species']['name']) . '</div></div>';
+                            if (count($parentArr['chain']['evolves_to'][0]['evolves_to']) >= 1) {
+                                foreach ($parentArr['chain']['evolves_to'][0]['evolves_to'] as $newValue) {
+                                    $nextPoke = json_decode(file_get_contents('https://pokeapi.co/api/v2/pokemon/' . $newValue['species']['name']), true);
+                                    echo '<div id="evo"><img id="sprites" src="' . $nextPoke['sprites']['front_default'] . '" alt="sprite"><div>' . ucfirst($newValue['species']['name']) . '</div></div>';;
+                                }
+                            }
                         }
-                        //display next evolution in array
-                        if (in_array($pokeName, $list)) {
-                            echo '<p>Parent: ' . ucfirst(next($list)) . '</p>';
-                        } else {
-                            //display first evolution in array
-                            echo '<p>Parent: ' . ucfirst(reset($list)) . '</p>';
-                        }
-                    } elseif ($parentArr['chain']['evolves_to'][0]['evolves_to'][0]['species']['name'] === $pokeName) {
-                        echo '<p>No further evolution</p>';
-                    } elseif ($parentArr['chain']['evolves_to'][0]['species']['name'] === $pokeName) {
-                        echo '<p>Parent: ' . ucfirst($parentArr['chain']['evolves_to'][0]['evolves_to'][0]['species']['name']) . '</p>';
-                    } else {
-                        echo '<p>Parent: ' . ucfirst($parentArr['chain']['evolves_to'][0]['species']['name']) . '</p>';
                     }
                     ?>
                 </div>
