@@ -1,0 +1,91 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0; }
+
+body {
+    background-image: url("../img/sky.jpg");
+    background-size: cover;
+}
+header {
+    text-align: center;
+    width: auto;
+    height: 50px;
+    margin-top: 30px;
+}
+#pokemon{
+    width: 500px;
+    margin-left: -120px;
+}
+#linkCat {
+    float: left;
+}
+#linkCat, #button {
+    color: #fff;
+    background-color: #f44336;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border: none;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+#button:hover, #linkCat:hover {
+    background-color: #00C3E7;
+}
+.input-field{
+    text-align: center;
+    margin-bottom: 10px;
+    margin-top: 150px;
+}
+#background {
+    width: 800px;
+    height: 350px;
+    background-image: url("../img/switch.png");
+    margin: 0 auto;
+}
+#info {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 140px;
+    width: 520px;
+    height: 260px;
+    color: white;
+    padding-top: 55px;
+    padding-left: 25px;
+    font-size: 20px;
+    text-align: center;
+}
+#first {
+    color: #fff;
+    z-index: 2;
+}
+#first {
+    width: 240px;
+    height: 100px;
+    font-size: 18px;
+}
+#second {
+    width: 200px;
+    height: 100px;
+    padding-top: 10px;
+    z-index: 1;
+}
+#moves, #evolution{
+    font-size: 16px;
+}
+#evolution {
+    display: flex;
+    flex-wrap: wrap;
+    width: 480px;
+    height: 120px;
+}
+#sprites {
+    display: flex;
+}
+#evo {
+    font-size: 15px;
+    width: 80px;
+    text-align: center;
+}
