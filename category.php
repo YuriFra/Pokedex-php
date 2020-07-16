@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
@@ -9,9 +8,11 @@ error_reporting(E_ALL);
 $totalPages = ceil(964 / 20);
 //current page
 $currentPage = (isset($_GET['page'])) ? ($_GET['page']) : 1;
-
+//get 20 pokemons per fetch
 $display20 = json_decode(file_get_contents('https://pokeapi.co/api/v2/pokemon?offset='.(($currentPage - 1) * 20).'&limit=20'), true);
-
+//pokemon types
+$counter = 1;
+$types = ['Fire', 'Water', 'Grass', 'Electric', 'Ground', 'Ice', 'Flying', 'Rock', 'Steel', 'Normal', 'Fighting', 'Ghost', 'Dark', 'Psychic', 'Poison', 'Dragon', 'Fairy', 'Bug'];
 ?>
 
 <!doctype html>
@@ -35,12 +36,25 @@ $display20 = json_decode(file_get_contents('https://pokeapi.co/api/v2/pokemon?of
 <div class="container">
     <!-- Header -->
     <header>
-        <a id="linkIndex" href="index.php">Home</a>
+        <a id="linkBtn" href="index.php">Home</a>
         <img src="img/pokemon.png" id="pokemon" alt="pokeTitle">
     </header>
-
     <!-- Main -->
     <main>
+        <!-- Select type -->
+        <section>
+            <form method="get">
+                <div id="dropdown">
+                    <select class="mb-1" name="Types">
+                        <option value="0">Select type</option>
+                        <?php foreach ($types as $type) {
+                            echo '<option value="'.$counter++.'">'.$type.'</option>';
+                        } ?>
+                    </select>
+                </div>
+                <input id="linkBtn" type="submit" name="send" value="Display Type">
+            </form>
+        </section>
         <!-- pagination -->
         <nav aria-label="display 20 pokemon">
             <ul class="pagination justify-content-center">
@@ -77,6 +91,7 @@ $display20 = json_decode(file_get_contents('https://pokeapi.co/api/v2/pokemon?of
                 </li>
             </ul>
         </nav>
+        <!-- display 20 pokemons with link to data per pokemon -->
         <section id="pokeInfo" class="container">
             <div class="row mb-5">
                 <?php foreach($display20['results'] as $value) {
