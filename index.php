@@ -1,22 +1,26 @@
 <?php
 declare(strict_types=1);
-
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
 if (isset($_GET['pokeId'])) {
-    $pokeInfo = file_get_contents('https://pokeapi.co/api/v2/pokemon/' . $_GET['pokeId']);
-    $pokeArr = json_decode($pokeInfo, true);
-    $pokeName = $pokeArr['name'];
-    $pokeId = $pokeArr['id'];
-    // get previous evolution
-    $pokeChild = file_get_contents('https://pokeapi.co/api/v2/pokemon-species/' . $pokeName);
-    $childArr = json_decode($pokeChild, true);
-    // next get evolutions
-    $pokeParent = file_get_contents($childArr['evolution_chain']['url']);
-    $parentArr = json_decode($pokeParent, true);
-    $firstPoke = json_decode(file_get_contents('https://pokeapi.co/api/v2/pokemon/' . $parentArr['chain']['species']['name']), true);
+    $pokeInfo = @file_get_contents('https://pokeapi.co/api/v2/pokemon/' . $_GET['pokeId']);
+    if (empty($pokeInfo)) {
+        echo '<script type="text/javascript">alert("Invalid name or ID");
+window.location.href="/";</script>';
+    } else {
+        $pokeArr = json_decode($pokeInfo, true);
+        $pokeName = $pokeArr['name'];
+        $pokeId = $pokeArr['id'];
+        // get previous evolution
+        $pokeChild = file_get_contents('https://pokeapi.co/api/v2/pokemon-species/' . $pokeName);
+        $childArr = json_decode($pokeChild, true);
+        // next get evolutions
+        $pokeParent = file_get_contents($childArr['evolution_chain']['url']);
+        $parentArr = json_decode($pokeParent, true);
+        $firstPoke = json_decode(file_get_contents('https://pokeapi.co/api/v2/pokemon/' . $parentArr['chain']['species']['name']), true);
+    }
 }
 ?>
 
@@ -63,7 +67,9 @@ if (isset($_GET['pokeId'])) {
                 </div>
                 <div id="evolution">
                     <?php if (isset($_GET['pokeId']))
-                        if (count($parentArr['chain']['evolves_to']) >= 1) {
+                        if ($parentArr['chain']['evolves_to'] === []) {
+                            echo '<p>No evolution</p>';
+                        } elseif (count($parentArr['chain']['evolves_to']) >= 1) {
                             echo '<div id="evo"><img id="sprites" src="' . $firstPoke['sprites']['front_default'] . '" alt="sprite"><div>' . ucfirst($parentArr['chain']['species']['name']) . '</div></div>';
                             foreach ($parentArr['chain']['evolves_to'] as $value) {
                                 $pokeList = json_decode(file_get_contents('https://pokeapi.co/api/v2/pokemon/' . $value['species']['name']), true);
